@@ -6,6 +6,7 @@ import com.example.lab8_6733800494_sec2.model.Review;
 import com.example.lab8_6733800494_sec2.service.ProductService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -18,24 +19,12 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @GetMapping
-    public String list(Model model) {
-        model.addAttribute("products", productService.findAll());
-        return "products/list";
-    }
-
     @GetMapping("/add")
     public String addForm(Model model) {
         Product product = new Product();
         product.setDetail(new ProductDetail());
         model.addAttribute("product", product);
         return "products/add";
-    }
-
-    @PostMapping("/save")
-    public String save(@ModelAttribute Product product) {
-        productService.save(product);
-        return "redirect:/products";
     }
 
     @GetMapping("/edit/{id}")
@@ -51,6 +40,27 @@ public class ProductController {
     @PostMapping("/update/{id}")
     public String update(@PathVariable Long id, @ModelAttribute Product product) {
         product.setId(id);
+        productService.save(product);
+        return "redirect:/products";
+    }
+
+    @GetMapping
+    public String list(Model model) {
+        List<Product> products = productService.findAll();
+        for (Product p : products) {
+            p.setDiscountedPrice(productService.getFinalPrice(p));
+        }
+        model.addAttribute("products", products);
+        return "products/list";
+    }
+    @PostMapping("/save")
+    public String save(@ModelAttribute Product product) {
+    
+        if (product.getReviews() != null) {
+            for (Review review : product.getReviews()) {
+                review.setProduct(product);
+            }
+        }
         productService.save(product);
         return "redirect:/products";
     }

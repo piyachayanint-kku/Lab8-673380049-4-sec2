@@ -23,11 +23,14 @@ public class Product {
     @JoinColumn(name = "detail_id", referencedColumnName = "id")
     private ProductDetail detail;
 
-    
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
 
-    
+    // ── field คำนวณ (ไม่ persist ลง DB) ──
+    // ใช้เก็บราคาหลังหักส่วนลด ที่คำนวณจาก Strategy Pattern ตอน list()
+    @Transient
+    private Double discountedPrice;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -46,4 +49,12 @@ public class Product {
     public void setDetail(ProductDetail detail) { this.detail = detail; }
     public List<Review> getReviews() { return reviews; }
     public void setReviews(List<Review> reviews) { this.reviews = reviews; }
+
+    public Double getDiscountedPrice() { return discountedPrice; }
+    public void setDiscountedPrice(Double discountedPrice) { this.discountedPrice = discountedPrice; }
+
+    public void addReview(Review review) {
+        review.setProduct(this);       // ผูก back-reference
+        this.reviews.add(review);
+    }
 }
